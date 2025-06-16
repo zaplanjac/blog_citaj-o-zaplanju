@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Header } from './components/Header';
 import { Homepage } from './components/Homepage';
@@ -17,9 +17,30 @@ export type View = 'home' | 'post';
 function App() {
   const [currentView, setCurrentView] = useState<View>('home');
   const [currentPostId, setCurrentPostId] = useState<string>('');
-  const [posts, setPosts] = useState<BlogPostType[]>(blogPosts);
+  const [posts, setPosts] = useState<BlogPostType[]>([]);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const { user } = useAuth();
+
+  // Load posts from localStorage on component mount
+  useEffect(() => {
+    const savedPosts = localStorage.getItem('blogPosts');
+    if (savedPosts) {
+      try {
+        const parsedPosts = JSON.parse(savedPosts);
+        setPosts(parsedPosts);
+      } catch (error) {
+        console.error('Error parsing saved posts:', error);
+        setPosts(blogPosts);
+      }
+    } else {
+      setPosts(blogPosts);
+    }
+  }, []);
+
+  // Save posts to localStorage whenever posts change
+  useEffect(() => {
+    localStorage.setItem('blogPosts', JSON.stringify(posts));
+  }, [posts]);
 
   const handleViewPost = (postId: string) => {
     setCurrentPostId(postId);
