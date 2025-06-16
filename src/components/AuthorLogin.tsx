@@ -1,32 +1,70 @@
 import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { BookOpen, Mail, User, AlertCircle } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
+import { BookOpen, Mail, User, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 interface AuthorLoginProps {
   onLogin: (user: any) => void;
 }
 
 export const AuthorLogin: React.FC<AuthorLoginProps> = ({ onLogin }) => {
-  const { user, signInWithGoogle } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    name: ''
+  });
 
-  if (user) {
+  if (isAuthenticated) {
     return <Navigate to="/author" replace />;
   }
 
-  const handleGoogleSignIn = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsLoading(true);
     setError('');
-    
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Молимо унесите валидну email адресу');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!formData.password || formData.password.length < 6) {
+      setError('Лозинка мора имати најмање 6 карактера');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!formData.name.trim()) {
+      setError('Молимо унесите ваше име');
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const user = await signInWithGoogle();
-      onLogin(user);
+      // Simulate authentication - in production this would be a real API call
+      setTimeout(() => {
+        const user = {
+          email: formData.email,
+          displayName: formData.name,
+          photoURL: null
+        };
+        
+        // Store user in localStorage for persistence
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        
+        onLogin(user);
+        setIsAuthenticated(true);
+        setIsLoading(false);
+      }, 1000);
     } catch (error: any) {
-      setError('Грешка при пријави. Проверите интернет везу и покушајте поново.');
+      setError('Грешка при пријави. Покушајте поново.');
       console.error('Login error:', error);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -61,8 +99,7 @@ export const AuthorLogin: React.FC<AuthorLoginProps> = ({ onLogin }) => {
               Добродошли, аутори!
             </h3>
             <p className="text-gray-600 leading-relaxed">
-              Пријавите се са вашим Gmail налогом да бисте могли да објављујете ваше приче о Заплању, 
-              његовим људима, култури и традицији.
+              Пријавите се са вашим email-ом да бисте могли да објављујете ваше приче о Заплању.
             </p>
           </div>
 
@@ -73,20 +110,78 @@ export const AuthorLogin: React.FC<AuthorLoginProps> = ({ onLogin }) => {
             </div>
           )}
 
-          <button
-            onClick={handleGoogleSignIn}
-            disabled={isLoading}
-            className="w-full flex items-center justify-center space-x-3 bg-white border-2 border-gray-200 text-gray-700 py-4 rounded-lg font-medium hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Mail className="w-5 h-5 text-red-500" />
-            <span>{isLoading ? 'Пријављивање...' : 'Пријави се са Gmail-ом'}</span>
-          </button>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                Ваше име *
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Унесите ваше име"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                Email адреса *
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="email"
+                  id="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-200"
+                  placeholder="vase.ime@example.com"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                Лозинка *
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                  className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Унесите лозинку"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-amber-600 text-white py-3 rounded-lg font-medium hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Пријављивање...' : 'Пријави се'}
+            </button>
+          </form>
 
           <div className="mt-6 text-center space-y-3">
-            <p className="text-sm text-gray-500">
-              Користимо Gmail за безбедну аутентификацију
-            </p>
-            
             <div className="border-t border-gray-200 pt-4">
               <h4 className="text-sm font-medium text-gray-700 mb-2">Зашто се пријавити?</h4>
               <ul className="text-xs text-gray-600 space-y-1">
@@ -99,10 +194,10 @@ export const AuthorLogin: React.FC<AuthorLoginProps> = ({ onLogin }) => {
           </div>
         </div>
 
-        {/* Additional Info */}
+        {/* Demo Info */}
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-500">
-            Немате Gmail? <a href="https://accounts.google.com/signup" target="_blank" rel="noopener noreferrer" className="text-amber-600 hover:text-amber-700 font-medium">Направите налог</a>
+            Демо подаци: bilo.koji@email.com / password123
           </p>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, BookOpen, Tag, Users, Info, ChevronDown } from 'lucide-react';
+import { X, BookOpen, Tag, Users, ChevronDown } from 'lucide-react';
 import { t } from '../utils/textConverter';
 
 interface MobileMenuProps {
@@ -27,8 +27,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, onBackT
 
   const menuItems = [
     { icon: BookOpen, label: t('Stories'), href: '#' },
-    { icon: Users, label: t('Authors'), href: '#' },
-    { icon: Info, label: t('About'), href: '#' }
+    { icon: Users, label: t('Authors'), href: '#' }
   ];
 
   const toggleCategories = () => {

@@ -33,7 +33,7 @@ export const Header: React.FC<HeaderProps> = ({ onBackToHome, showBackButton = f
               >
                 <BookOpen className="w-7 h-7 text-amber-600 group-hover:text-amber-700 transition-colors duration-200" />
                 <h1 className="text-2xl font-serif font-bold text-gray-900 group-hover:text-amber-700 transition-colors duration-200">
-                  {t('Readwell')}
+                  Читај о Заплању
                 </h1>
               </button>
             </div>
@@ -47,9 +47,6 @@ export const Header: React.FC<HeaderProps> = ({ onBackToHome, showBackButton = f
                 {t('Authors')}
               </a>
               <CategoryDropdown />
-              <a href="#" className="text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200">
-                {t('About')}
-              </a>
             </nav>
 
             {/* Mobile Menu Button */}
@@ -72,4 +69,4 @@ export const Header: React.FC<HeaderProps> = ({ onBackToHome, showBackButton = f
       />
     </>
   );
-};
+}

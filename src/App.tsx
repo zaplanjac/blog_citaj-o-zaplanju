@@ -21,25 +21,36 @@ function App() {
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const { user } = useAuth();
 
-  // Load posts from localStorage on component mount
+  // Load posts from localStorage on component mount, with fallback to default posts
   useEffect(() => {
     const savedPosts = localStorage.getItem('blogPosts');
     if (savedPosts) {
       try {
         const parsedPosts = JSON.parse(savedPosts);
-        setPosts(parsedPosts);
+        // Ensure we have posts, if not use default
+        if (parsedPosts && parsedPosts.length > 0) {
+          setPosts(parsedPosts);
+        } else {
+          setPosts(blogPosts);
+          localStorage.setItem('blogPosts', JSON.stringify(blogPosts));
+        }
       } catch (error) {
         console.error('Error parsing saved posts:', error);
         setPosts(blogPosts);
+        localStorage.setItem('blogPosts', JSON.stringify(blogPosts));
       }
     } else {
+      // No saved posts, use default and save them
       setPosts(blogPosts);
+      localStorage.setItem('blogPosts', JSON.stringify(blogPosts));
     }
   }, []);
 
   // Save posts to localStorage whenever posts change
   useEffect(() => {
-    localStorage.setItem('blogPosts', JSON.stringify(posts));
+    if (posts.length > 0) {
+      localStorage.setItem('blogPosts', JSON.stringify(posts));
+    }
   }, [posts]);
 
   const handleViewPost = (postId: string) => {
